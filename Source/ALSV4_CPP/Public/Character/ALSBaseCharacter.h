@@ -9,6 +9,8 @@
 #include "Library/ALSCharacterEnumLibrary.h"
 #include "Library/ALSCharacterStructLibrary.h"
 #include "Engine/DataTable.h"
+#include "GameplayTagContainer.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
 
 #include "ALSBaseCharacter.generated.h"
@@ -27,7 +29,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRagdollStateChangedSignature, bool,
  * Base character class
  */
 UCLASS(BlueprintType)
-class ALSV4_CPP_API AALSBaseCharacter : public ACharacter
+class ALSV4_CPP_API AALSBaseCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -347,6 +349,14 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ALS|Input")
 	void LookingDirectionAction();
 
+	/* Ability System */
+	class UAbilitySystemComponent* GetAbilitySystemComponent() const
+	{
+		return AbilitySystem;
+	};
+
+	bool TryActivateAbility(FGameplayTag Tag);
+
 protected:
 	/** Ragdoll System */
 
@@ -421,6 +431,13 @@ protected:
 	/* Custom movement component*/
 	UPROPERTY()
 	TObjectPtr<UALSCharacterMovementComponent> MyCharacterMovementComponent;
+
+	/* Ability System */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
+	UAbilitySystemComponent* AbilitySystem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Abilities)
+	TArray<TSubclassOf<class UGameplayAbility>> AbilityList;
 
 	/** Input */
 
