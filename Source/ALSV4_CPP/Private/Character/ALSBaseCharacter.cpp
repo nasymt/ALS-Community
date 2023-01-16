@@ -18,6 +18,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "Net/UnrealNetwork.h"
+// #include "AbilitySystemComponent.h"
 
 
 const FName NAME_FP_Camera(TEXT("FP_Camera"));
@@ -37,6 +38,7 @@ AALSBaseCharacter::AALSBaseCharacter(const FObjectInitializer& ObjectInitializer
 	bUseControllerRotationYaw = 0;
 	bReplicates = true;
 	SetReplicatingMovement(true);
+	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
 }
 
 void AALSBaseCharacter::PostInitializeComponents()
@@ -117,6 +119,22 @@ void AALSBaseCharacter::BeginPlay()
 	MyCharacterMovementComponent->SetMovementSettings(GetTargetMovementSettings());
 
 	ALSDebugComponent = FindComponentByClass<UALSDebugComponent>();
+	
+	if (AbilitySystem)
+	{
+		int32 inputID(0);
+		if (HasAuthority() && AbilityList.Num() > 0)
+		{
+			for (auto Ability : AbilityList) {
+				if (Ability)
+				{
+					// UE_LOG(LogTemp, Log, TEXT("BeginPlay GiveAbility %d"), inputID);
+					AbilityHandles.Emplace(AbilitySystem->GiveAbility(	FGameplayAbilitySpec(Ability.GetDefaultObject(), 1, inputID++)));
+				}
+			}
+		}
+		AbilitySystem->InitAbilityActorInfo(this, this);
+	}
 }
 
 void AALSBaseCharacter::Tick(float DeltaTime)

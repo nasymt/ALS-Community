@@ -6,6 +6,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/TimelineComponent.h"
+#include "AbilitySystemInterface.h"
+#include "AbilitySystemComponent.h"
+
 #include "Library/ALSCharacterEnumLibrary.h"
 #include "Library/ALSCharacterStructLibrary.h"
 #include "Engine/DataTable.h"
@@ -27,7 +30,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRagdollStateChangedSignature, bool,
  * Base character class
  */
 UCLASS(BlueprintType)
-class ALSV4_CPP_API AALSBaseCharacter : public ACharacter
+class ALSV4_CPP_API AALSBaseCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -346,6 +349,19 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ALS|Input")
 	void LookingDirectionAction();
+
+	/* Ability System */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
+	class UAbilitySystemComponent* AbilitySystem;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override
+	{
+		return AbilitySystem;
+	};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Abilities)
+	TArray<TSubclassOf<class UGameplayAbility>> AbilityList;
+
+	TArray<FGameplayAbilitySpecHandle> AbilityHandles;	
 
 protected:
 	/** Ragdoll System */
